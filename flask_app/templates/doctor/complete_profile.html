@@ -1,0 +1,116 @@
+{% extends "doctor/doctor_base.html" %}
+
+{% block title %}Complete Profile - MedHealth.Tunisia{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="mb-0">Complete Your Professional Profile</h4>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i>
+                        Please provide your professional information for verification. This information will be reviewed by our administrators.
+                    </div>
+
+                    <form method="POST" action="{{ url_for('complete_doctor_profile') }}" class="needs-validation" novalidate>
+                        <div class="mb-3">
+                            <label for="specialty" class="form-label">Medical Specialty</label>
+                            <input type="text" class="form-control" id="specialty" name="specialty" required>
+                            <div class="invalid-feedback">
+                                Please provide your medical specialty.
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="license_number" class="form-label">Medical License Number</label>
+                            <input type="text" class="form-control" id="license_number" name="license_number" required>
+                            <div class="invalid-feedback">
+                                Please provide your medical license number.
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="education" class="form-label">Education & Qualifications</label>
+                            <textarea class="form-control" id="education" name="education" rows="3" required></textarea>
+                            <div class="form-text">List your degrees, certifications, and relevant qualifications.</div>
+                            <div class="invalid-feedback">
+                                Please provide your educational background.
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="experience_years" class="form-label">Years of Experience</label>
+                            <input type="number" class="form-control" id="experience_years" name="experience_years" min="0" required>
+                            <div class="invalid-feedback">
+                                Please provide your years of experience.
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="bio" class="form-label">Professional Bio</label>
+                            <textarea class="form-control" id="bio" name="bio" rows="4" required></textarea>
+                            <div class="form-text">Minimum 50 characters. Describe your professional background and expertise.</div>
+                            <div class="invalid-feedback">
+                                Please provide a professional bio (minimum 50 characters).
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="consultation_fee" class="form-label">Consultation Fee (TND)</label>
+                            <input type="number" class="form-control" id="consultation_fee" name="consultation_fee" min="0" step="0.01" required>
+                            <div class="invalid-feedback">
+                                Please provide your consultation fee.
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="languages_spoken" class="form-label">Languages Spoken</label>
+                            <input type="text" class="form-control" id="languages_spoken" name="languages_spoken" required>
+                            <div class="form-text">Separate languages with commas (e.g., Arabic, French, English)</div>
+                            <div class="invalid-feedback">
+                                Please list the languages you speak.
+                            </div>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary">Submit for Verification</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Form validation
+(function () {
+    'use strict'
+    var forms = document.querySelectorAll('.needs-validation')
+    Array.prototype.slice.call(forms).forEach(function (form) {
+        form.addEventListener('submit', function (event) {
+            if (!form.checkValidity()) {
+                event.preventDefault()
+                event.stopPropagation()
+            }
+            form.classList.add('was-validated')
+        }, false)
+    })
+
+    // Bio length validation
+    document.getElementById('bio').addEventListener('input', function() {
+        if (this.value.length < 50) {
+            this.setCustomValidity('Bio must be at least 50 characters long');
+        } else {
+            this.setCustomValidity('');
+        }
+    });
+})()
+</script>
+{% endblock %}

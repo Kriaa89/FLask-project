@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Doctor Dashboard - MedHealth.Tunisia{% endblock %}</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <!-- Custom CSS -->
+    <style>
+        :root {
+            --primary-color: #00c853;
+            --primary-dark: #009624;
+            --primary-light: #5efc82;
+            --text-dark: #1a1a1a;
+            --text-light: #ffffff;
+            --gray-light: #f8f9fa;
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background-color: var(--gray-light);
+        }
+
+        .sidebar {
+            position: fixed;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            z-index: 100;
+            padding: 48px 0 0;
+            box-shadow: var(--shadow);
+            background-color: white;
+        }
+
+        .sidebar-sticky {
+            position: relative;
+            top: 0;
+            height: calc(100vh - 48px);
+            padding-top: .5rem;
+            overflow-x: hidden;
+            overflow-y: auto;
+        }
+
+        .navbar {
+            box-shadow: var(--shadow);
+            background: white;
+        }
+
+        .nav-link {
+            color: var(--text-dark);
+            padding: 0.5rem 1rem;
+            margin: 0.2rem 0;
+            border-radius: 0.25rem;
+            transition: all 0.3s ease;
+        }
+
+        .nav-link:hover,
+        .nav-link.active {
+            color: var(--primary-color);
+            background-color: var(--gray-light);
+        }
+
+        .nav-link i {
+            margin-right: 0.5rem;
+            width: 1.25rem;
+            text-align: center;
+        }
+
+        .main-content {
+            margin-left: 240px;
+            padding: 2rem;
+        }
+
+        .card {
+            border: none;
+            border-radius: 10px;
+            box-shadow: var(--shadow);
+            margin-bottom: 1.5rem;
+        }
+
+        .card-header {
+            background-color: white;
+            border-bottom: 1px solid rgba(0,0,0,.125);
+            padding: 1rem;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-dark);
+            border-color: var(--primary-dark);
+        }
+
+        .verification-pending {
+            background-color: #fff3cd;
+            color: #856404;
+            padding: 1rem;
+            border-radius: 0.25rem;
+            margin-bottom: 1rem;
+        }
+
+        .profile-incomplete {
+            background-color: #f8d7da;
+            color: #721c24;
+            padding: 1rem;
+            border-radius: 0.25rem;
+            margin-bottom: 1rem;
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <nav class="navbar navbar-light fixed-top bg-white flex-md-nowrap p-0 shadow">
+        <a class="navbar-brand col-md-3 col-lg-2 mr-0 px-3" href="#">MedHealth.Tunisia</a>
+        <div class="w-100"></div>
+        <ul class="navbar-nav px-3">
+            <li class="nav-item text-nowrap">
+                <a class="nav-link" href="{{ url_for('logout') }}">Sign out</a>
+            </li>
+        </ul>
+    </nav>
+
+    <div class="container-fluid">
+        <div class="row">
+            <nav class="col-md-3 col-lg-2 d-md-block sidebar">
+                <div class="sidebar-sticky">
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.endpoint == 'doctor_dashboard' %}active{% endif %}" href="{{ url_for('doctor_dashboard') }}">
+                                <i class="fas fa-home"></i>
+                                Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.endpoint == 'doctor_appointments' %}active{% endif %}" href="{{ url_for('doctor_appointments') }}">
+                                <i class="fas fa-calendar-alt"></i>
+                                Appointments
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.endpoint == 'doctor_patients' %}active{% endif %}" href="{{ url_for('doctor_patients') }}">
+                                <i class="fas fa-users"></i>
+                                Patients
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.endpoint == 'doctor_prescriptions' %}active{% endif %}" href="{{ url_for('doctor_prescriptions') }}">
+                                <i class="fas fa-prescription"></i>
+                                Prescriptions
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.endpoint == 'doctor_profile' %}active{% endif %}" href="{{ url_for('doctor_profile') }}">
+                                <i class="fas fa-user-md"></i>
+                                Profile
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.endpoint == 'doctor_settings' %}active{% endif %}" href="{{ url_for('doctor_settings') }}">
+                                <i class="fas fa-cog"></i>
+                                Settings
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+
+            <main role="main" class="col-md-9 ml-sm-auto col-lg-10 px-md-4 main-content">
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                            <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+
+                {% if session.get('doctor_verification_status') == 'pending' %}
+                    <div class="verification-pending">
+                        <i class="fas fa-exclamation-circle"></i>
+                        Your account is pending verification. An administrator will review your information shortly.
+                    </div>
+                {% endif %}
+
+                {% if not session.get('doctor_profile_complete') %}
+                    <div class="profile-incomplete">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        Please complete your profile to proceed with verification.
+                        <a href="{{ url_for('doctor_profile') }}" class="btn btn-danger btn-sm ms-3">Complete Profile</a>
+                    </div>
+                {% endif %}
+
+                {% block content %}{% endblock %}
+            </main>
+        </div>
+    </div>
+
+    <!-- Bootstrap Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,171 @@
+{% extends "admin/admin_base.html" %}
+
+{% block title %}Doctor Verifications - Admin Dashboard{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <h2 class="mb-4">Doctor Verifications</h2>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Pending Verifications</h5>
+                </div>
+                <div class="card-body">
+                    {% if pending_doctors %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Specialty</th>
+                                    <th>License</th>
+                                    <th>Experience</th>
+                                    <th>Education</th>
+                                    <th>Submitted</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for doctor in pending_doctors %}
+                                <tr>
+                                    <td>
+                                        {% if doctor.profile_picture %}
+                                        <img src="{{ doctor.profile_picture }}" class="rounded-circle me-2" width="30" height="30">
+                                        {% endif %}
+                                        {{ doctor.first_name }} {{ doctor.last_name }}
+                                    </td>
+                                    <td>{{ doctor.specialty }}</td>
+                                    <td>{{ doctor.license_number }}</td>
+                                    <td>{{ doctor.experience_years }} years</td>
+                                    <td>{{ doctor.education[:100] }}{% if doctor.education|length > 100 %}...{% endif %}</td>
+                                    <td>{{ doctor.created_at.strftime('%Y-%m-%d') }}</td>
+                                    <td>
+                                        <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#reviewModal{{ doctor.id }}">
+                                            Review
+                                        </button>
+                                    </td>
+                                </tr>
+
+                                <!-- Review Modal -->
+                                <div class="modal fade" id="reviewModal{{ doctor.id }}" tabindex="-1">
+                                    <div class="modal-dialog modal-lg">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title">Review Doctor Verification</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <div class="row mb-4">
+                                                    <div class="col-md-3">
+                                                        {% if doctor.profile_picture %}
+                                                        <img src="{{ doctor.profile_picture }}" class="img-fluid rounded">
+                                                        {% endif %}
+                                                    </div>
+                                                    <div class="col-md-9">
+                                                        <h4>{{ doctor.first_name }} {{ doctor.last_name }}</h4>
+                                                        <p><strong>Email:</strong> {{ doctor.email }}</p>
+                                                        <p><strong>Phone:</strong> {{ doctor.phone_number }}</p>
+                                                    </div>
+                                                </div>
+
+                                                <div class="row mb-3">
+                                                    <div class="col-md-6">
+                                                        <h6>Professional Details</h6>
+                                                        <ul class="list-unstyled">
+                                                            <li><strong>Specialty:</strong> {{ doctor.specialty }}</li>
+                                                            <li><strong>License Number:</strong> {{ doctor.license_number }}</li>
+                                                            <li><strong>Experience:</strong> {{ doctor.experience_years }} years</li>
+                                                            <li><strong>Languages:</strong> {{ doctor.languages_spoken }}</li>
+                                                            <li><strong>Consultation Fee:</strong> {{ doctor.consultation_fee }} TND</li>
+                                                        </ul>
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <h6>Education</h6>
+                                                        <p>{{ doctor.education }}</p>
+                                                    </div>
+                                                </div>
+
+                                                <div class="mb-3">
+                                                    <h6>Professional Bio</h6>
+                                                    <p>{{ doctor.bio }}</p>
+                                                </div>
+
+                                                <form action="{{ url_for('update_doctor_verification') }}" method="POST">
+                                                    <input type="hidden" name="doctor_id" value="{{ doctor.id }}">
+                                                    
+                                                    <div class="mb-3">
+                                                        <label class="form-label">Verification Decision</label>
+                                                        <div class="form-check">
+                                                            <input class="form-check-input" type="radio" name="status" value="approved" id="approve{{ doctor.id }}" required>
+                                                            <label class="form-check-label" for="approve{{ doctor.id }}">
+                                                                Approve
+                                                            </label>
+                                                        </div>
+                                                        <div class="form-check">
+                                                            <input class="form-check-input" type="radio" name="status" value="rejected" id="reject{{ doctor.id }}">
+                                                            <label class="form-check-label" for="reject{{ doctor.id }}">
+                                                                Reject
+                                                            </label>
+                                                        </div>
+                                                    </div>
+
+                                                    <div class="mb-3">
+                                                        <label for="notes{{ doctor.id }}" class="form-label">Notes</label>
+                                                        <textarea class="form-control" id="notes{{ doctor.id }}" name="notes" rows="3" required></textarea>
+                                                        <div class="form-text">
+                                                            Please provide a reason for your decision. This will be visible to the doctor.
+                                                        </div>
+                                                    </div>
+
+                                                    <div class="text-end">
+                                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                                        <button type="submit" class="btn btn-primary">Submit Decision</button>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-check-circle text-success fa-3x mb-3"></i>
+                        <h5>No Pending Verifications</h5>
+                        <p class="text-muted">All doctor verifications have been processed.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Enable tooltips
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl)
+    });
+
+    // Form validation
+    var forms = document.querySelectorAll('.needs-validation')
+    Array.prototype.slice.call(forms).forEach(function (form) {
+        form.addEventListener('submit', function (event) {
+            if (!form.checkValidity()) {
+                event.preventDefault()
+                event.stopPropagation()
+            }
+            form.classList.add('was-validated')
+        }, false)
+    });
+});
+</script>
+{% endblock %}
