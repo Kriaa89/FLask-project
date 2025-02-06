@@ -1,0 +1,202 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="mb-0">Update Medical Record</h4>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('update_medical_record') }}">
+                        <!-- Basic Information -->
+                        <h5 class="border-bottom pb-2">Basic Information</h5>
+                        <div class="row mb-4">
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="blood_type" class="form-label">Blood Type</label>
+                                    <select class="form-select" id="blood_type" name="blood_type">
+                                        <option value="">Select Blood Type</option>
+                                        {% for type in ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'] %}
+                                        <option value="{{ type }}" {% if medical_record and medical_record.blood_type == type %}selected{% endif %}>{{ type }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="height" class="form-label">Height (cm)</label>
+                                    <input type="number" class="form-control" id="height" name="height" step="0.01"
+                                           value="{{ medical_record.height if medical_record else '' }}">
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="weight" class="form-label">Weight (kg)</label>
+                                    <input type="number" class="form-control" id="weight" name="weight" step="0.01"
+                                           value="{{ medical_record.weight if medical_record else '' }}">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Gender-specific Information -->
+                        {% if patient.gender == 'M' %}
+                        <h5 class="border-bottom pb-2">Male Health Information</h5>
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="prostate_exam" class="form-label">Last Prostate Exam</label>
+                                    <input type="date" class="form-control" id="prostate_exam" name="prostate_exam"
+                                           value="{{ medical_record.prostate_exam.strftime('%Y-%m-%d') if medical_record and medical_record.prostate_exam else '' }}">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="psa_level" class="form-label">PSA Level</label>
+                                    <input type="number" class="form-control" id="psa_level" name="psa_level" step="0.1"
+                                           value="{{ medical_record.psa_level if medical_record else '' }}">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="testicular_exam" class="form-label">Last Testicular Exam</label>
+                                    <input type="date" class="form-control" id="testicular_exam" name="testicular_exam"
+                                           value="{{ medical_record.testicular_exam.strftime('%Y-%m-%d') if medical_record and medical_record.testicular_exam else '' }}">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="cardiac_test" class="form-label">Last Cardiac Test</label>
+                                    <input type="date" class="form-control" id="cardiac_test" name="cardiac_test"
+                                           value="{{ medical_record.cardiac_test.strftime('%Y-%m-%d') if medical_record and medical_record.cardiac_test else '' }}">
+                                </div>
+                            </div>
+                        </div>
+                        {% else %}
+                        <h5 class="border-bottom pb-2">Female Health Information</h5>
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="last_menstrual" class="form-label">Last Menstrual Period</label>
+                                    <input type="date" class="form-control" id="last_menstrual" name="last_menstrual"
+                                           value="{{ medical_record.last_menstrual.strftime('%Y-%m-%d') if medical_record and medical_record.last_menstrual else '' }}">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="mammogram_date" class="form-label">Last Mammogram</label>
+                                    <input type="date" class="form-control" id="mammogram_date" name="mammogram_date"
+                                           value="{{ medical_record.mammogram_date.strftime('%Y-%m-%d') if medical_record and medical_record.mammogram_date else '' }}">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="pap_smear_date" class="form-label">Last Pap Smear</label>
+                                    <input type="date" class="form-control" id="pap_smear_date" name="pap_smear_date"
+                                           value="{{ medical_record.pap_smear_date.strftime('%Y-%m-%d') if medical_record and medical_record.pap_smear_date else '' }}">
+                                </div>
+                                <div class="mb-3">
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input" type="checkbox" id="pregnant" name="pregnant" value="1"
+                                               {% if medical_record and medical_record.pregnant %}checked{% endif %}
+                                               onchange="toggleDueDate()">
+                                        <label class="form-check-label" for="pregnant">Currently Pregnant</label>
+                                    </div>
+                                    <div id="dueDateField" style="display: none;">
+                                        <label for="due_date" class="form-label">Due Date</label>
+                                        <input type="date" class="form-control" id="due_date" name="due_date"
+                                               value="{{ medical_record.due_date.strftime('%Y-%m-%d') if medical_record and medical_record.due_date else '' }}">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        <!-- Common Health Information -->
+                        <h5 class="border-bottom pb-2">Health History</h5>
+                        <div class="mb-4">
+                            <div class="mb-3">
+                                <label for="allergies" class="form-label">Allergies</label>
+                                <textarea class="form-control" id="allergies" name="allergies" rows="2"
+                                          placeholder="List any known allergies, including medications, food, etc.">{{ medical_record.allergies if medical_record else '' }}</textarea>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="chronic_conditions" class="form-label">Chronic Conditions</label>
+                                <textarea class="form-control" id="chronic_conditions" name="chronic_conditions" rows="2"
+                                          placeholder="List any ongoing medical conditions">{{ medical_record.chronic_conditions if medical_record else '' }}</textarea>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="current_medications" class="form-label">Current Medications</label>
+                                <textarea class="form-control" id="current_medications" name="current_medications" rows="2"
+                                          placeholder="List all medications you are currently taking">{{ medical_record.current_medications if medical_record else '' }}</textarea>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="past_surgeries" class="form-label">Past Surgeries</label>
+                                <textarea class="form-control" id="past_surgeries" name="past_surgeries" rows="2"
+                                          placeholder="List any previous surgeries with dates if known">{{ medical_record.past_surgeries if medical_record else '' }}</textarea>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="family_history" class="form-label">Family History</label>
+                                <textarea class="form-control" id="family_history" name="family_history" rows="2"
+                                          placeholder="List any significant family medical history">{{ medical_record.family_history if medical_record else '' }}</textarea>
+                            </div>
+                        </div>
+
+                        <!-- Emergency Contact -->
+                        <h5 class="border-bottom pb-2">Emergency Contact</h5>
+                        <div class="row mb-4">
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="emergency_contact_name" class="form-label">Name</label>
+                                    <input type="text" class="form-control" id="emergency_contact_name" name="emergency_contact_name"
+                                           value="{{ medical_record.emergency_contact_name if medical_record else '' }}">
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="emergency_contact_phone" class="form-label">Phone</label>
+                                    <input type="tel" class="form-control" id="emergency_contact_phone" name="emergency_contact_phone"
+                                           value="{{ medical_record.emergency_contact_phone if medical_record else '' }}">
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="emergency_contact_relationship" class="form-label">Relationship</label>
+                                    <input type="text" class="form-control" id="emergency_contact_relationship" name="emergency_contact_relationship"
+                                           value="{{ medical_record.emergency_contact_relationship if medical_record else '' }}">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Additional Notes -->
+                        <div class="mb-4">
+                            <label for="notes" class="form-label">Additional Notes</label>
+                            <textarea class="form-control" id="notes" name="notes" rows="3"
+                                      placeholder="Any additional information you'd like to share">{{ medical_record.notes if medical_record else '' }}</textarea>
+                        </div>
+
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary">Update Medical Record</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+function toggleDueDate() {
+    const pregnant = document.getElementById('pregnant');
+    const dueDateField = document.getElementById('dueDateField');
+    dueDateField.style.display = pregnant.checked ? 'block' : 'none';
+}
+
+// Initialize due date field visibility
+document.addEventListener('DOMContentLoaded', function() {
+    toggleDueDate();
+});
+</script>
+{% endblock %}

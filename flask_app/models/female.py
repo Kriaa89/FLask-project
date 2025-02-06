@@ -30,3 +30,17 @@ class Female:
         query = "SELECT * FROM females WHERE patient_id = %(patient_id)s;"
         results = connectToMySQL(cls.db).query_db(query, {'patient_id': patient_id})
         return cls(results[0]) if results else None
+
+    @classmethod
+    def update(cls, data):
+        query = """
+        UPDATE females 
+        SET last_menstrual = %(last_menstrual)s,
+            mammogram_date = %(mammogram_date)s,
+            pap_smear_date = %(pap_smear_date)s,
+            due_date = %(due_date)s,
+            pregnant = %(pregnant)s,
+            notes = %(notes)s
+        WHERE patient_id = %(patient_id)s;
+        """
+        return connectToMySQL(cls.db).query_db(query, data)

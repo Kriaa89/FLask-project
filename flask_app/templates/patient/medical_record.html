@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0">Medical Record</h4>
+                    <a href="{{ url_for('update_medical_record') }}" class="btn btn-primary">
+                        <i class="fas fa-edit"></i> Update Record
+                    </a>
+                </div>
+                <div class="card-body">
+                    <!-- Basic Information -->
+                    <h5 class="border-bottom pb-2">Basic Information</h5>
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <p><strong>Blood Type:</strong> {{ medical_record.blood_type or 'Not provided' }}</p>
+                            <p><strong>Height:</strong> {{ medical_record.height or 'Not provided' }} cm</p>
+                            <p><strong>Weight:</strong> {{ medical_record.weight or 'Not provided' }} kg</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Last Updated:</strong> {{ medical_record.updated_at.strftime('%B %d, %Y') }}</p>
+                        </div>
+                    </div>
+
+                    <!-- Gender-specific Information -->
+                    {% if patient.gender == 'M' %}
+                    <h5 class="border-bottom pb-2">Male Health Information</h5>
+                    <div class="mb-4">
+                        <p><strong>Last Prostate Exam:</strong> {{ medical_record.prostate_exam.strftime('%B %d, %Y') if medical_record.prostate_exam else 'Not provided' }}</p>
+                        <p><strong>PSA Level:</strong> {{ medical_record.psa_level or 'Not provided' }}</p>
+                        <p><strong>Last Testicular Exam:</strong> {{ medical_record.testicular_exam.strftime('%B %d, %Y') if medical_record.testicular_exam else 'Not provided' }}</p>
+                        <p><strong>Last Cardiac Test:</strong> {{ medical_record.cardiac_test.strftime('%B %d, %Y') if medical_record.cardiac_test else 'Not provided' }}</p>
+                    </div>
+                    {% else %}
+                    <h5 class="border-bottom pb-2">Female Health Information</h5>
+                    <div class="mb-4">
+                        <p><strong>Last Menstrual Period:</strong> {{ medical_record.last_menstrual.strftime('%B %d, %Y') if medical_record.last_menstrual else 'Not provided' }}</p>
+                        <p><strong>Last Mammogram:</strong> {{ medical_record.mammogram_date.strftime('%B %d, %Y') if medical_record.mammogram_date else 'Not provided' }}</p>
+                        <p><strong>Last Pap Smear:</strong> {{ medical_record.pap_smear_date.strftime('%B %d, %Y') if medical_record.pap_smear_date else 'Not provided' }}</p>
+                        {% if medical_record.pregnant %}
+                        <p><strong>Due Date:</strong> {{ medical_record.due_date.strftime('%B %d, %Y') if medical_record.due_date else 'Not provided' }}</p>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+
+                    <!-- Common Health Information -->
+                    <h5 class="border-bottom pb-2">Health History</h5>
+                    <div class="mb-4">
+                        <p><strong>Allergies:</strong></p>
+                        <p class="text-muted">{{ medical_record.allergies or 'No known allergies' }}</p>
+
+                        <p><strong>Chronic Conditions:</strong></p>
+                        <p class="text-muted">{{ medical_record.chronic_conditions or 'None reported' }}</p>
+
+                        <p><strong>Current Medications:</strong></p>
+                        <p class="text-muted">{{ medical_record.current_medications or 'None reported' }}</p>
+
+                        <p><strong>Past Surgeries:</strong></p>
+                        <p class="text-muted">{{ medical_record.past_surgeries or 'None reported' }}</p>
+
+                        <p><strong>Family History:</strong></p>
+                        <p class="text-muted">{{ medical_record.family_history or 'None reported' }}</p>
+                    </div>
+
+                    <!-- Emergency Contact -->
+                    <h5 class="border-bottom pb-2">Emergency Contact</h5>
+                    <div>
+                        <p><strong>Name:</strong> {{ medical_record.emergency_contact_name or 'Not provided' }}</p>
+                        <p><strong>Phone:</strong> {{ medical_record.emergency_contact_phone or 'Not provided' }}</p>
+                        <p><strong>Relationship:</strong> {{ medical_record.emergency_contact_relationship or 'Not provided' }}</p>
+                    </div>
+
+                    {% if medical_record.notes %}
+                    <!-- Additional Notes -->
+                    <h5 class="border-bottom pb-2 mt-4">Additional Notes</h5>
+                    <p class="text-muted">{{ medical_record.notes }}</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,187 @@
+{% extends "base.html" %}
+{% block content %}
+
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg navbar-light bg-white">
+    <div class="container">
+        <a class="navbar-brand" href="{{ url_for('home') }}">
+            <img src="{{ url_for('static', filename='images/logo.png') }}" alt="MedTunisia" height="40">
+        </a>
+        
+        <div class="dropdown ms-auto">
+            <button class="btn dropdown-toggle d-flex align-items-center" type="button" id="userDropdown" data-bs-toggle="dropdown">
+                <img src="{{ patient.profile_picture or url_for('static', filename='images/default-profile.png') }}" 
+                     class="rounded-circle me-2" alt="Profile" width="32" height="32">
+                <span>{{ patient.first_name }}</span>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end">
+                <li><a class="dropdown-item" href="{{ url_for('patient_profile') }}">Profile</a></li>
+                <li><a class="dropdown-item" href="{{ url_for('patient_settings') }}">Settings</a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item" href="{{ url_for('logout') }}">Logout</a></li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<div class="container mt-4">
+    <div class="row">
+        <!-- Left Column - Patient Info -->
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body text-center">
+                    <img src="{{ patient.profile_picture or url_for('static', filename='images/default-profile.png') }}" 
+                         class="rounded-circle mb-3" alt="Profile" width="120" height="120">
+                    <h4>{{ patient.first_name }} {{ patient.last_name }}</h4>
+                    <p class="text-muted">{{ patient.region }}, {{ patient.city }}</p>
+                    
+                    <h5 class="mt-4">Medical Record</h5>
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for('view_medical_record') }}" class="btn btn-primary">View Medical Record</a>
+                        <a href="{{ url_for('update_medical_record') }}" class="btn btn-outline-primary">Update Record</a>
+                    </div>
+                    <small class="text-muted mt-2">Last updated: {{ medical_record.updated_at.strftime('%B %d, %Y') }}</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column - Quick Actions and Appointments -->
+        <div class="col-md-8">
+            <!-- Quick Actions -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5>Quick Actions</h5>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <a href="{{ url_for('search_doctors') }}" class="btn btn-success w-100">Book New Appointment</a>
+                        </div>
+                        <div class="col-md-6">
+                            <a href="{{ url_for('view_appointments') }}" class="btn btn-info w-100">View Appointments</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Appointments List -->
+            <div class="card">
+                <div class="card-body">
+                    <h5>Your Appointments</h5>
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Doctor</th>
+                                    <th>Date</th>
+                                    <th>Time</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for appointment in appointments %}
+                                <tr>
+                                    <td>Dr. {{ appointment.doctor_name }}</td>
+                                    <td>{{ appointment.date.strftime('%b %d, %Y') }}</td>
+                                    <td>{{ appointment.time.strftime('%I:%M %p') }}</td>
+                                    <td>
+                                        <span class="badge {% if appointment.status == 'confirmed' %}bg-success
+                                                         {% elif appointment.status == 'pending' %}bg-warning
+                                                         {% else %}bg-danger{% endif %}">
+                                            {{ appointment.status|title }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-primary" onclick="viewAppointment({{ appointment.id }})">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-danger" onclick="cancelAppointment({{ appointment.id }})">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Statistics -->
+                    <div class="row mt-4">
+                        <div class="col-md-6">
+                            <div class="card bg-light">
+                                <div class="card-body text-center">
+                                    <h6>Upcoming Appointments</h6>
+                                    <h2>{{ upcoming_count }}</h2>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card bg-light">
+                                <div class="card-body text-center">
+                                    <h6>Past Appointments</h6>
+                                    <h2>{{ past_count }}</h2>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Appointment Details Modal -->
+<div class="modal fade" id="appointmentModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Appointment Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="appointmentDetails">
+                <!-- Appointment details will be loaded here -->
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+function viewAppointment(appointmentId) {
+    fetch(`/api/appointments/${appointmentId}`)
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('appointmentDetails').innerHTML = `
+                <p><strong>Doctor:</strong> Dr. ${data.doctor_name}</p>
+                <p><strong>Specialty:</strong> ${data.specialty}</p>
+                <p><strong>Date:</strong> ${data.date}</p>
+                <p><strong>Time:</strong> ${data.time}</p>
+                <p><strong>Location:</strong> ${data.location}</p>
+                <p><strong>Status:</strong> ${data.status}</p>
+                <p><strong>Symptoms/Reason:</strong> ${data.symptoms}</p>
+            `;
+            new bootstrap.Modal(document.getElementById('appointmentModal')).show();
+        });
+}
+
+function cancelAppointment(appointmentId) {
+    if (confirm('Are you sure you want to cancel this appointment?')) {
+        fetch(`/api/appointments/${appointmentId}/cancel`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Failed to cancel appointment');
+            }
+        });
+    }
+}
+</script>
+{% endblock %}
