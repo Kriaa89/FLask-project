@@ -24,10 +24,10 @@ def register():
         'password': pw_hash,
         'role': request.form['role'],
         'gender': request.form['gender'],
-        'phone_number': request.form['phone'],  # Note: form field is 'phone'
-        'profile_picture': request.form.get('profile_picture', None),  # Optional
-        'address': request.form.get('address', None),  # Optional
-        'date_of_birth': request.form.get('date_of_birth', None)  # Optional
+        'phone_number': request.form.get('phone_number'),  
+        'profile_picture': request.form.get('profile_picture', None),  
+        'address': request.form.get('address', None),  
+        'date_of_birth': request.form.get('date_of_birth', None)  
     }
     
     # Insert the user and get the ID

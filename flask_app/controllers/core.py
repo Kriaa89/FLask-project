@@ -92,7 +92,7 @@ def patient_dashboard():
     if patient:
         emergency_contacts = patient.get_emergency_contacts()
     
-    return render_template('patient/dashboard.html',
+    return render_template('patient/patient_dashboard.html',
                          user=user,
                          patient=patient,
                          upcoming_appointments=upcoming_appointments,

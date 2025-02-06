@@ -24,13 +24,24 @@ class User:
     
     @classmethod
     def save(cls, data):
+        # Convert gender to database format
+        gender_map = {'male': 'M', 'female': 'F'}
+        gender = gender_map.get(data['gender'].lower(), data['gender'])
+        
+        # Convert role to database format
+        role_map = {'doctor': 'doctor', 'patient': 'patient'}
+        role = role_map.get(data['role'].lower(), data['role'])
+        
+        # Prepare data with converted gender and role
+        save_data = {**data, 'gender': gender, 'role': role}
+        
         query = """
         INSERT INTO users (role, first_name, last_name, gender, email, 
                         phone_number, password, profile_picture, address, date_of_birth) 
         VALUES (%(role)s, %(first_name)s, %(last_name)s, %(gender)s, %(email)s, 
                 %(phone_number)s, %(password)s, %(profile_picture)s, %(address)s, %(date_of_birth)s);
         """
-        return connectToMySQL(cls.db).query_db(query, data)
+        return connectToMySQL(cls.db).query_db(query, save_data)
     
     @classmethod
     def get_by_email(cls, data):
@@ -107,7 +118,7 @@ class User:
         
         # Required fields validation
         required_fields = ['first_name', 'last_name', 'email', 'password', 'confirm_password', 
-                        'role', 'gender', 'phone_number']
+                        'role', 'gender']
         for field in required_fields:
             if field not in data or not data[field]:
                 flash(f"{field.replace('_', ' ').title()} is required", "danger")
@@ -135,10 +146,10 @@ class User:
             is_valid = False
             
         # Validate phone number (Tunisia format)
-        phone_regex = re.compile(r'^(\+216|216)?[02-57-9]\d{7}$')
-        if not phone_regex.match(data['phone_number'].replace(' ', '')):
-            flash("Invalid phone number format. Please use Tunisia phone number format (8 digits, cannot start with 1, 6, or 8)", "danger")
-            is_valid = False
+        #phone_regex = re.compile(r'^(\+216|216)?[02-57-9]\d{7}$')
+        #if not phone_regex.match(data['phone_number'].replace(' ', '')):
+           # flash("Invalid phone number format. Please use Tunisia phone number format (8 digits, cannot start with 1, 6, or 8)", "danger")
+          #  is_valid = False
             
         # Validate password
         if len(data['password']) < 8:
